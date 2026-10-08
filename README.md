@@ -51,3 +51,4 @@ Each question should record its source in the `source` field so it is obvious wh
 ## Suggested first coding task
 
 Build the **topic filter** in the top bar. It is small enough to learn the codebase without touching the SQL runner yet.
+# cs348-sql-practice

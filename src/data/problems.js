@@ -234,7 +234,7 @@ Ancestor(anc, desc) AS (
 SELECT anc
 FROM Ancestor
 WHERE desc = 'Bart';`,
-  },,
+  },
   {
     id: 'sql-15',
     title: 'Create the PC table',
@@ -408,7 +408,7 @@ export const sampleTables = {
       ['dps', 'Dead Putting Society'],
       ['spr', 'Sports Club'],
     ],
-  },,
+  },
   Product: {
     columns: ['maker', 'model', 'type'],
     rows: [
@@ -476,7 +476,7 @@ export const sampleTables = {
       [104, 11, 2002],
       [105, 13, 2010],
     ],
-  }
+  },
   Parent: {
     columns: ['parent', 'child'],
     rows: [

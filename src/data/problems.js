@@ -234,7 +234,149 @@ Ancestor(anc, desc) AS (
 SELECT anc
 FROM Ancestor
 WHERE desc = 'Bart';`,
+  },,
+  {
+    id: 'sql-15',
+    title: 'Create the PC table',
+    source: 'Midterm 1 practice question 2(i)',
+    difficulty: 'Medium',
+    prompt: 'Write a CREATE TABLE statement for PC(model, speed, ram, hd, price). model, ram, and price are INT; speed is FLOAT; only hd may be NULL. model is the primary key. price must be between 500 and 5000 inclusive.',
+    expectedColumns: [],
+    schema: ['PC(model, speed, ram, hd, price)'],
+    starterCode: 'CREATE TABLE PC (',
+    solution: `CREATE TABLE PC (
+  model INT PRIMARY KEY,
+  speed FLOAT NOT NULL,
+  ram INT NOT NULL,
+  hd INT,
+  price INT NOT NULL CHECK(price >= 500 AND price <= 5000)
+);`,
   },
+  {
+    id: 'sql-16',
+    title: 'Add a RAM constraint',
+    source: 'Midterm 1 practice question 2(i)',
+    difficulty: 'Easy',
+    prompt: 'After PC has been created, add a named constraint that only allows RAM values of at least 32.',
+    expectedColumns: [],
+    schema: ['PC(model, speed, ram, hd, price)'],
+    starterCode: 'ALTER TABLE PC',
+    solution: `ALTER TABLE PC
+ADD CONSTRAINT ram_check CHECK(ram >= 32);`,
+  },
+  {
+    id: 'sql-17',
+    title: 'Manufacturers without laptops',
+    source: 'Midterm 1 practice question 4(a)',
+    difficulty: 'Medium',
+    prompt: 'List distinct manufacturers that do not sell laptops. Do not use set operations such as EXCEPT.',
+    expectedColumns: ['maker'],
+    schema: ['Product(maker, model, type)'],
+    starterCode: 'SELECT DISTINCT maker\nFROM Product\nWHERE',
+    solution: `SELECT DISTINCT maker
+FROM Product
+WHERE maker NOT IN (
+  SELECT maker
+  FROM Product
+  WHERE type = 'laptop'
+);`,
+  },
+  {
+    id: 'sql-18',
+    title: 'PC models with more RAM',
+    source: 'Midterm 1 practice question 4(b)',
+    difficulty: 'Medium',
+    prompt: 'List distinct PC model numbers whose RAM is greater than 1024. Do not use set operations or a subquery; write it as a simple SELECT-FROM-WHERE query.',
+    expectedColumns: ['model'],
+    schema: ['Product(maker, model, type)', 'PC(model, speed, ram, hd, price)'],
+    starterCode: 'SELECT DISTINCT\nFROM Product p, PC pc\nWHERE',
+    solution: `SELECT DISTINCT p.model
+FROM Product p, PC pc
+WHERE p.model = pc.model
+  AND p.type = 'pc'
+  AND pc.ram > 1024;`,
+  },
+  {
+    id: 'sql-19',
+    title: 'Makers with only color printers',
+    source: 'Midterm 1 practice question 4(c)',
+    difficulty: 'Hard',
+    prompt: 'Find makers all of whose printers are color printers.',
+    expectedColumns: ['maker'],
+    schema: ['Product(maker, model, type)', 'Printer(model, color, type, price)'],
+    starterCode: 'SELECT maker\nFROM Product\nWHERE type = \'printer\'',
+    solution: `SELECT maker
+FROM Product
+WHERE type = 'printer'
+EXCEPT
+SELECT p.maker
+FROM Product p, Printer r
+WHERE p.type = 'printer'
+  AND p.model = r.model
+  AND r.color = FALSE;`,
+  },
+  {
+    id: 'sql-20',
+    title: 'Average salary of most-certified pilots',
+    source: 'Midterm 1 practice question 5.2',
+    difficulty: 'Hard',
+    prompt: 'Find the average salary, as avgSal, of the pilots certified to fly the highest number of aircraft.',
+    expectedColumns: ['avgSal'],
+    schema: ['Employee(eID, ename, salary)', 'Certified(eID, aID, cyear)'],
+    starterCode: 'WITH temp AS (\n  SELECT\n)\nSELECT',
+    solution: `WITH temp AS (
+  SELECT eid, COUNT(*) AS c_cnt
+  FROM Certified
+  GROUP BY eid
+)
+SELECT AVG(salary) AS avgSal
+FROM temp t, Employee e
+WHERE t.c_cnt = (SELECT MAX(c_cnt) FROM temp)
+  AND t.eid = e.eid;`,
+  },
+  {
+    id: 'sql-21',
+    title: 'Long-range pilots without Boeing',
+    source: 'Midterm 1 practice question 5.4',
+    difficulty: 'Hard',
+    prompt: 'Find the names of pilots who can operate aircraft with a cruising range greater than 3000 miles, but are not certified on any Boeing aircraft.',
+    expectedColumns: ['ename'],
+    schema: ['Aircraft(aID, producer, cruisingrange)', 'Employee(eID, ename, salary)', 'Certified(eID, aID, cyear)'],
+    starterCode: 'SELECT\nFROM\nWHERE',
+    solution: `SELECT e.ename
+FROM Certified c, Employee e, Aircraft a
+WHERE a.aID = c.aID
+  AND e.eID = c.eID
+  AND a.cruisingrange > 3000
+  AND e.eID NOT IN (
+    SELECT c2.eID
+    FROM Certified c2, Aircraft a2
+    WHERE c2.aID = a2.aID
+      AND a2.producer = 'Boeing'
+  )
+GROUP BY e.eID, e.ename;`,
+  },
+  {
+    id: 'sql-22',
+    title: 'Aircraft certified by at most three pilots',
+    source: 'Midterm 1 practice question 5.5',
+    difficulty: 'Hard',
+    prompt: 'Find aircraft IDs and producers that are certified by at most 3 pilots, including aircraft certified by 0 pilots. Also return the maximum salary as smax of pilots certified for each aircraft; use 0 instead of NULL when there are no certified pilots.',
+    expectedColumns: ['aID', 'producer', 'smax'],
+    schema: ['Aircraft(aID, producer, cruisingrange)', 'Employee(eID, ename, salary)', 'Pilot(eID, ranking)', 'Certified(eID, aID, cyear)'],
+    starterCode: 'SELECT\nFROM\nWHERE\nGROUP BY\nHAVING',
+    solution: `SELECT a.aID, a.producer, MAX(e.salary) AS smax
+FROM Pilot p, Certified c, Aircraft a, Employee e
+WHERE p.eID = c.eID
+  AND c.aID = a.aID
+  AND p.eID = e.eID
+GROUP BY a.aID, a.producer
+HAVING COUNT(*) <= 3
+UNION
+SELECT a.aID, a.producer, 0 AS smax
+FROM Aircraft a
+WHERE a.aID NOT IN (SELECT aID FROM Certified);`,
+  }
 ]
 
 export const sampleTables = {
@@ -266,7 +408,75 @@ export const sampleTables = {
       ['dps', 'Dead Putting Society'],
       ['spr', 'Sports Club'],
     ],
+  },,
+  Product: {
+    columns: ['maker', 'model', 'type'],
+    rows: [
+      ['A', 101, 'pc'],
+      ['B', 303, 'printer'],
+      ['D', 201, 'laptop'],
+      ['D', 301, 'printer'],
+    ],
   },
+  PC: {
+    columns: ['model', 'speed', 'ram', 'hd', 'price'],
+    rows: [
+      [101, 2.66, 1024, 250, 2114],
+      [102, 2.10, 512, 250, 995],
+      [103, 1.40, 512, 80, 478],
+      [104, 2.80, 1024, 250, 649],
+    ],
+  },
+  Laptop: {
+    columns: ['model', 'speed', 'ram', 'hd', 'screen', 'price'],
+    rows: [
+      [201, 2.00, 2048, 240, 20.1, 3673],
+      [207, 1.73, 1024, 80, 17.0, 949],
+      [203, 1.80, 512, 60, 15.4, 549],
+      [206, 2.00, 512, 60, 13.3, 1150],
+    ],
+  },
+  Printer: {
+    columns: ['model', 'color', 'type', 'price'],
+    rows: [
+      [301, true, 'inkjet', 99],
+      [303, false, 'laser', 209],
+      [304, true, 'laser', 391],
+      [306, true, 'dry', 129],
+    ],
+  },
+  Aircraft: {
+    columns: ['aID', 'producer', 'cruisingrange'],
+    rows: [
+      [11, 'Boeing', 2500.0],
+      [12, 'Airbus', 3100.0],
+      [13, 'Embraer', 3300.0],
+      [14, 'Beechcraft', 2000.0],
+      [15, 'Boeing', 4000.0],
+    ],
+  },
+  Employee: {
+    columns: ['eID', 'ename', 'salary'],
+    rows: [
+      [101, 'Alice', 5000.0],
+      [104, 'Bob', 4000.0],
+      [105, 'Carmen', 6000.0],
+    ],
+  },
+  Pilot: {
+    columns: ['eID', 'ranking'],
+    rows: [
+      [104, 3],
+      [105, 2],
+    ],
+  },
+  Certified: {
+    columns: ['eID', 'aID', 'cyear'],
+    rows: [
+      [104, 11, 2002],
+      [105, 13, 2010],
+    ],
+  }
   Parent: {
     columns: ['parent', 'child'],
     rows: [
